@@ -57,3 +57,5 @@ export async function POST(request: Request) {
 
     return Response.json(order);
 }
+
+export const dynamic = 'force-dynamic'
