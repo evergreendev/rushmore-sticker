@@ -4,9 +4,13 @@ import {
     PayPalCardFieldsProvider,
     PayPalScriptProvider, usePayPalCardFields, usePayPalScriptReducer
 } from "@paypal/react-paypal-js";
+import 'react-toastify/dist/ReactToastify.css';
 import {PropsWithChildren, useCallback, useEffect, useMemo, useState} from "react";
 import {useSearchParams} from "next/navigation";
 import {calculateTotals} from "@/app/utils/stickers";
+import {success} from "@/app/actions";
+import { ToastContainer, toast } from 'react-toastify';
+import {addEntry} from "@/app/utils/db";
 
 const PayPalForm = () => {
     const [isPaying, setIsPaying] = useState(false);
@@ -22,6 +26,7 @@ const PayPalForm = () => {
     const numberOfStickers = searchParams.get("number-of-stickers");
 
     const createOrder = useCallback(async function () {
+        if (isPaying) return;
         const order = await fetch("/order/create", {
             method: "POST",
             // Use the "body" parameter to optionally pass additional order information
@@ -32,7 +37,7 @@ const PayPalForm = () => {
         const res = await order.json();
 
         return JSON.parse(res).id;
-    },[numberOfStickers]);
+    },[isPaying, numberOfStickers]);
 
     async function onApprove(data: { orderID: any; }) {
         try {
@@ -40,14 +45,26 @@ const PayPalForm = () => {
                 method: "POST",
             });
             const orderData = await response.json();
+            if (orderData && JSON.parse(orderData).status === "COMPLETED"){
+                if (JSON.parse(orderData).purchase_units[0].payments.captures[0].status === "DECLINED"){
+                    toast('Your Payment was declined. Please try another card', {
+                        position: "bottom-right",
+                        type: "error"
+                    });
+                } else {//THIS IS THE SUCCESSFUL PATH
 
-            if (JSON.parse(orderData.status) !== "COMPLETED") {
-                /*todo redirect to success page*/
-                setIsPaying(false);
+                    await addEntry(searchParams.get("name") || "", searchParams.get("age-division") || "", searchParams.get("team-name") || "", searchParams.get("number-of-stickers") || "")
+
+                    await success(searchParams.get("name") || "", searchParams.get("age-division") || "", searchParams.get("team-name") || "", searchParams.get("number-of-stickers") || "");
+                }
             } else {
-                setIsPaying(false);
+                toast('Something went wrong please try again', {
+                    position: "bottom-right",
+                    type: "error"
+                });
             }
 
+            setIsPaying(false);
         } catch (err) {
             console.error(err);
         }
@@ -146,7 +163,9 @@ const SubmitPayment = ({isPaying, setIsPaying, billingAddress, numberOfStickers}
 
     return (
         <div className="flex">
+            <ToastContainer/>
             <button
+                disabled={isPaying}
                 className={`ml-auto block bg-blue-900 text-white text-4xl px-2 py-2 rounded font-bold ${isPaying ? "bg-gray-300 text-white" : "bg-amber-900 text-white"}`}
                 style={{float: "right"}}
                 onClick={handleClick}

@@ -11,8 +11,7 @@ export async function POST(request: Request) {
 
     let CreateRequest = new paypal.orders.OrdersCreateRequest();
 
-    console.log((totals.tax));
-
+    // @ts-ignore
     CreateRequest.requestBody({
         "intent": "CAPTURE",
         "purchase_units": [
@@ -42,7 +41,7 @@ export async function POST(request: Request) {
                             "currency_code": "USD",
                             "value": totals.tax.toFixed(2)
                         }
-                    }
+                    } as any
                 },
             }
         ]
