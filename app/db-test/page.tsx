@@ -3,11 +3,13 @@ import {Suspense} from "react";
 import {addEntry} from "@/app/utils/db";
 
 const test = async () => {
-    await addEntry("t","t","t","2")
+    return await addEntry("t","t","t","2")
 }
 
 export default async function Page() {
-    await test();
+    const testRes = await test();
+
+    console.log(testRes);
     return (
         <main className="flex flex-col items-center justify-between p-24">
             <Suspense>
