@@ -64,7 +64,7 @@ const PayPalForm = () => {
 
     return <PayPalScriptProvider
         options={{
-            clientId: "AUmeRrIKPlM5FoKsgT0Ol7Ro5criswqkdvsD4_B3b2pO-LA31OXivdKvIQN05ugv86nmC1rJdXKfMasT",
+            clientId: process.env.NEXT_PUBLIC_CLIENT_ID||"",
             components: "card-fields",
         }}
     >
