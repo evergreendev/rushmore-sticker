@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import Image from "next/image";
+import sticker from "@/public/sticker.png";
+import sticker1 from "@/public/sticker.png";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,7 +19,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <body className={inter.className}>
+    <div className="flex flex-wrap items-center gap-8 w-full bg-blue-900 text-white">
+        <div className="flex flex-wrap items-center gap-8 w-full bg-blue-900 text-white mx-auto max-w-screen-lg shadow">
+            <Image className="w-60" src={sticker1} alt=""/>
+            <div className="font-bold">
+                <h3 className="w-full text-4xl mb-3">$5 each</h3>
+                <h3 className="w-full text-4xl mb-3">3 for $13</h3>
+                <h3 className="w-full text-4xl mb-3">10 for $40</h3>
+            </div>
+        </div>
+    </div>
+    {children}
+    </body>
     </html>
   );
 }

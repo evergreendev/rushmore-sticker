@@ -13,8 +13,6 @@ export async function POST(request: Request, {params}: {params: {orderId: string
     let captureOrder = async function() {
         let response = await payPalHttpClient.execute(CreateRequest);
 
-        console.log(response);
-
         return JSON.stringify(response.result);
     }
 

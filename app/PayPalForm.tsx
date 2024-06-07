@@ -2,9 +2,11 @@
 import {
     PayPalCardFieldsForm,
     PayPalCardFieldsProvider,
-    PayPalScriptProvider, usePayPalCardFields
+    PayPalScriptProvider, usePayPalCardFields, usePayPalScriptReducer
 } from "@paypal/react-paypal-js";
-import {useState} from "react";
+import {PropsWithChildren, useCallback, useEffect, useMemo, useState} from "react";
+import {useSearchParams} from "next/navigation";
+import {calculateTotals} from "@/app/utils/stickers";
 
 const PayPalForm = () => {
     const [isPaying, setIsPaying] = useState(false);
@@ -16,19 +18,21 @@ const PayPalForm = () => {
         countryCode: "US",
         postalCode: "",
     });
+    const searchParams = useSearchParams();
+    const numberOfStickers = searchParams.get("number-of-stickers");
 
-    async function createOrder() {
+    const createOrder = useCallback(async function () {
         const order = await fetch("/order/create", {
             method: "POST",
             // Use the "body" parameter to optionally pass additional order information
             body: JSON.stringify({
-                "salesPrice": "10.00"//TODO CHANGE THIS
+                "numberOfStickers": numberOfStickers
             }),
         });
         const res = await order.json();
 
         return JSON.parse(res).id;
-    }
+    },[numberOfStickers]);
 
     async function onApprove(data: { orderID: any; }) {
         try {
@@ -36,22 +40,27 @@ const PayPalForm = () => {
                 method: "POST",
             });
             const orderData = await response.json();
+
+            if (JSON.parse(orderData.status) !== "COMPLETED") {
+                /*todo redirect to success page*/
+                setIsPaying(false);
+            } else {
+                setIsPaying(false);
+            }
+
         } catch (err) {
             console.error(err);
         }
     }
 
-    function onError(error:any) {
+    function onError(error: any) {
         // Do something with the error from the SDK
         console.error(error)
     }
 
-    function handleBillingAddressChange(field: string, value: string) {
-        setBillingAddress((prev) => ({
-            ...prev,
-            [field]: value,
-        }));
-    }
+    const totals = calculateTotals(numberOfStickers||"0");
+    const amountToBePaid = totals.totalFormatted;
+    const grandTotal = totals.totalWithTaxFormatted;
 
     return <PayPalScriptProvider
         options={{
@@ -64,9 +73,10 @@ const PayPalForm = () => {
             onApprove={onApprove}
             onError={onError}
         >
-            <div className="text-slate-950">
+            <div className="text-slate-950 bg-slate-100 p-2">
+                <p className="font-bold text-2xl">Payment Info</p>
                 <PayPalCardFieldsForm/>
-                <input
+                {/*                <input
                     type="text"
                     id="card-billing-address-line-2"
                     name="card-billing-address-line-2"
@@ -92,19 +102,26 @@ const PayPalForm = () => {
                     onChange={(e) =>
                         handleBillingAddressChange("postalCode", e.target.value)
                     }
-                />
+                />*/}
                 {/* Custom client component to handle card fields submission */}
+                <div className="w-full">
+                    <h2 className="text-3xl mb-3">Sticker Count: {numberOfStickers}</h2>
+                    <h2 className="text-3xl mb-3">Sticker Total (Excludes Tax): <span
+                        className="font-bold">${amountToBePaid}</span></h2>
+                    <h2 className="text-2xl mb-3">Grand Total: <span className="font-bold">${grandTotal}</span></h2>
+                </div>
                 <SubmitPayment
                     isPaying={isPaying}
                     setIsPaying={setIsPaying}
                     billingAddress={billingAddress}
+                    numberOfSticker={numberOfStickers}
                 />
             </div>
         </PayPalCardFieldsProvider>
     </PayPalScriptProvider>
 }
 
-const SubmitPayment = ({isPaying, setIsPaying, billingAddress}: any) => {
+const SubmitPayment = ({isPaying, setIsPaying, billingAddress, numberOfStickers}: any) => {
     const {cardFieldsForm, fields} = usePayPalCardFields();
 
     const handleClick = async () => {
@@ -122,19 +139,24 @@ const SubmitPayment = ({isPaying, setIsPaying, billingAddress}: any) => {
         setIsPaying(true);
 
         // @ts-ignore
-        cardFieldsForm.submit({billingAddress}).catch((err) => {
+        cardFieldsForm.submit({billingAddress,numberOfStickers}).catch((err) => {
             setIsPaying(false);
         });
     };
 
     return (
-        <button
-            className={`p-2 px-6 ${isPaying ? "bg-gray-300 text-white" : "bg-orange-600 text-white"}`}
-            style={{float: "right"}}
-            onClick={handleClick}
-        >
-            {isPaying ? <div className="animate-spin border-gray-50 border-l-2 rounded-full size-5"/> : "Pay"}
-        </button>
+        <div className="flex">
+            <button
+                className={`ml-auto block bg-blue-900 text-white text-4xl px-2 py-2 rounded font-bold ${isPaying ? "bg-gray-300 text-white" : "bg-amber-900 text-white"}`}
+                style={{float: "right"}}
+                onClick={handleClick}
+            >
+                {isPaying ?
+                    <div
+                        className="animate-spin border-gray-50 border-l-2 rounded-full size-5"/> : "Submit Payment"}
+            </button>
+        </div>
+
     );
 };
 
