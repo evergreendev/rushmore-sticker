@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en">
     <body className={inter.className}>
-    <div className="flex flex-wrap items-center w-full bg-[#ff9053] text-white">
+    <div className="flex flex-wrap items-center w-full bg-[#ffc387] text-white">
         <div className="flex flex-wrap items-center justify-center w-full bg-[#4e8eae] text-white mx-auto max-w-screen-xl shadow">
             <h2 className="text-6xl font-bold w-full text-center mt-8 mb-6">GET YOUR LIMITED EDITION MT RUSHMORE CLASSIC STICKERS</h2>
             <Link href="/">
