@@ -29,8 +29,6 @@ export default function RootLayout({
             <div className="font-bold">
 
                 <h3 className="w-full text-6xl mb-1">$5 each</h3>
-                <h3 className="w-full text-6xl mb-1">3 for $13</h3>
-                <h3 className="w-full text-6xl mb-1">10 for $40</h3>
             </div>
         </div>
     </div>

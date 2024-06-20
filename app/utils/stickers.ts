@@ -10,7 +10,7 @@ export const calculateTotals = (numberOfStickers:string) => {
     let remainder = 0;
     let finalDiscount = 0;
 
-    while(discountStickers > 0){
+/*    while(discountStickers > 0){
         remainder = discountStickers % parseInt(currDiscount);
         discountStickers -= remainder;
 
@@ -23,7 +23,7 @@ export const calculateTotals = (numberOfStickers:string) => {
         } else if (currDiscount === "3"){
             discountStickers = 0;
         }
-    }
+    }*/
 
 
     const total = (stickerBasePrice - finalDiscount);
